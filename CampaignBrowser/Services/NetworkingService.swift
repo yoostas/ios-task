@@ -79,7 +79,8 @@ class CampaignListingRequest: Request {
     let imageService = ServiceLocator.instance.imageService
 
     var url: URL {
-        return URL(string: "http://localhost:8000/response.json")! // swiftlint:disable:this force_unwrapping
+        // swiftlint:disable:next force_unwrapping
+        return URL(string: "https://westwing-home-and-living.github.io/ios-task/campaigns.json")!
     }
 
     func parseResponse(withData data: [[String: Any]]) throws -> CampaignList {
