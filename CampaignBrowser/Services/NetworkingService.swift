@@ -84,7 +84,7 @@ class CampaignListingRequest: Request {
     }
 
     func parseResponse(withData data: [[String: Any]]) throws -> CampaignList {
-        return data.flatMap { campaignData in
+        return data.compactMap { campaignData in
             guard
                 let name = campaignData["name"] as? String,
                 let urlKey = campaignData["url_key"] as? String,

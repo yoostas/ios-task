@@ -29,6 +29,6 @@ class CampaignListingViewController: UIViewController {
             .subscribe(onNext: { [weak self] campaigns in
                 self?.typedView.display(campaigns: campaigns)
             })
-            .addDisposableTo(disposeBag)
+            .disposed(by: disposeBag)
     }
 }

@@ -32,8 +32,8 @@ class Campaign {
 
 
 extension Campaign: Hashable {
-    var hashValue: Int {
-        return 42 ^ urlKey.hashValue
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(urlKey)
     }
 }
 

@@ -26,7 +26,7 @@ class CampaignCell: UICollectionViewCell {
                 .subscribe(onNext: { [weak self] image in
                     self?.imageView.image = image
                     })
-                .addDisposableTo(disposeBag)
+                .disposed(by: disposeBag)
         }
     }
 
