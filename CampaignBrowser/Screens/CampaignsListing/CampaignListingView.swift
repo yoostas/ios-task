@@ -1,5 +1,5 @@
 import UIKit
-
+import RxSwift
 
 /**
  The view which displays the list of campaigns. It is configured in the storyboard (Main.storyboard). The corresponding
@@ -13,6 +13,23 @@ class CampaignListingView: UICollectionView {
     @IBOutlet var strongDataSource: UICollectionViewDataSource!
 
     /**
+     Displays the given campaign list.
+     */
+    func display(campaigns: [Campaign]) {
+        let campaignDataSource = ListingDataSource(campaigns: campaigns)
+        dataSource = campaignDataSource
+        delegate = campaignDataSource
+        strongDataSource = campaignDataSource
+        reloadData()
+    }
+
+    struct Campaign {
+        let name: String
+        let description: String
+        let moodImage: Observable<UIImage>
+    }
+
+    /**
      All the possible cell types that are used in this collection view.
      */
     enum Cells: String {
@@ -23,17 +40,6 @@ class CampaignListingView: UICollectionView {
         /** The cell which is used to display a campaign. */
         case campaignCell
     }
-
-    /**
-     Displays the given campaign list.
-     */
-    func display(campaigns: CampaignList) {
-        let campaignDataSource = ListingDataSource(campaigns: campaigns)
-        dataSource = campaignDataSource
-        delegate = campaignDataSource
-        strongDataSource = campaignDataSource
-        reloadData()
-    }
 }
 
 
@@ -43,14 +49,14 @@ class CampaignListingView: UICollectionView {
 class ListingDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     /** The campaigns that need to be displayed. */
-    let campaigns: [Campaign]
+    let campaigns: [CampaignListingView.Campaign]
 
     /**
      Designated initializer.
 
      - Parameter campaign: The campaigns that need to be displayed.
      */
-    init(campaigns: [Campaign]) {
+    init(campaigns: [CampaignListingView.Campaign]) {
         self.campaigns = campaigns
     }
 

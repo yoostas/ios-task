@@ -8,20 +8,11 @@ import RxCocoa
  */
 protocol Request {
 
-    /** The raw response type of the JSON that is returned by the server. */
-    associatedtype RawResponseType
-
     /** The response type when the response was parsed by the application. */
-    associatedtype ParsedResponseType
+    associatedtype ResponseData: Decodable
 
     /** The URL that should be requested. */
     var url: URL { get }
-
-    /**
-     A method that gets the raw response from the server and parses it to the correct type. If the parsing is not
-     successful, the method should throw. The error is propagated to the consumer of the request.
-     */
-    func parseResponse(withData: RawResponseType) throws -> ParsedResponseType
 }
 
 
@@ -33,6 +24,8 @@ class NetworkingService {
     /** The URLSession instance which is used to handle the request. */
     private let urlSession: URLSession
 
+    private let jsonDecoder = JSONDecoder()
+
     /**
      Designated initializer.
 
@@ -43,17 +36,13 @@ class NetworkingService {
     }
 
     /**
-     Creates a cold observable from the given request. The observable will emit the response which was transformed via
-     the `parseResponse(withData:)` method.
+     Creates a cold observable from the given request.
      */
-    func createObservableResponse<T: Request>(request: T) -> Observable<T.ParsedResponseType> {
+    func createObservableResponse<R: Request>(request: R) -> Observable<R.ResponseData> {
         return urlSession.rx
-            .json(request: URLRequest(url: request.url))
-            .map { rawData in
-                guard let data = rawData as? T.RawResponseType else {
-                    throw UnexpectedResponse(response: rawData)
-                }
-                return try request.parseResponse(withData: data)
+            .data(request: URLRequest(url: request.url))
+            .map { [jsonDecoder] rawData in
+                try jsonDecoder.decode(R.ResponseData.self, from: rawData)
             }
     }
 }
@@ -71,31 +60,11 @@ struct UnexpectedResponse: Error {
 /**
 The request which fetches the list of campaigns.
 */
-class CampaignListingRequest: Request {
-    typealias ResponseType = CampaignList
-    typealias RawResponseType = [[String: Any]]
-
-    /** The image service which is used to create images. */
-    let imageService = ServiceLocator.instance.imageService
+struct CampaignListingRequest: Request {
+    typealias ResponseData = CampaignList
 
     var url: URL {
         // swiftlint:disable:next force_unwrapping
-        return URL(string: "https://westwing-home-and-living.github.io/ios-task/campaigns.json")!
-    }
-
-    func parseResponse(withData data: [[String: Any]]) throws -> CampaignList {
-        return data.compactMap { campaignData in
-            guard
-                let name = campaignData["name"] as? String,
-                let urlKey = campaignData["url_key"] as? String,
-                let description = campaignData["description"] as? String,
-                let urlString = campaignData["image_url"] as? String,
-                let url = URL(string: urlString)
-                else {
-                return nil
-            }
-            return Campaign(urlKey: urlKey, name: name, description: description,
-                            moodImage: imageService.getImage(url: url))
-        }
+        URL(string: "https://westwing-home-and-living.github.io/ios-task/campaigns.json")!
     }
 }

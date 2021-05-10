@@ -8,7 +8,9 @@ import RxSwift
  */
 class CampaignListingViewController: UIViewController {
 
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
+
+    private let imageService = ServiceLocator.instance.imageService
 
     @IBOutlet
     private(set) weak var typedView: CampaignListingView!
@@ -27,7 +29,14 @@ class CampaignListingViewController: UIViewController {
             .createObservableResponse(request: CampaignListingRequest())
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] campaigns in
-                self?.typedView.display(campaigns: campaigns)
+                guard let self = self else { return }
+                self.typedView.display(campaigns: campaigns.map {
+                    CampaignListingView.Campaign(
+                        name: $0.name,
+                        description: $0.description,
+                        moodImage: self.imageService.getImage(url: $0.moodImage)
+                    )
+                })
             })
             .disposed(by: disposeBag)
     }
