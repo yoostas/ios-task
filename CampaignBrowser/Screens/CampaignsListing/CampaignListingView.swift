@@ -19,6 +19,7 @@ class CampaignListingView: UICollectionView {
         let campaignDataSource = ListingDataSource(campaigns: campaigns)
         dataSource = campaignDataSource
         delegate = campaignDataSource
+        self.createLayout()
         strongDataSource = campaignDataSource
         reloadData()
     }
@@ -39,6 +40,16 @@ class CampaignListingView: UICollectionView {
 
         /** The cell which is used to display a campaign. */
         case campaignCell
+    }
+
+    /**
+     Prepare automatic estimated size layout.
+     */
+    private func createLayout() {
+        if let layout = self.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
+            self.setCollectionViewLayout(layout, animated: true)
+        }
     }
 }
 
@@ -73,17 +84,12 @@ class ListingDataSource: NSObject, UICollectionViewDataSource, UICollectionViewD
             campaignCell.moodImage = campaign.moodImage
             campaignCell.name = campaign.name
             campaignCell.descriptionText = campaign.description
+            campaignCell.layoutIfNeeded()
         } else {
             assertionFailure("The cell should a CampaignCell")
         }
         return cell
     }
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width, height: 450)
-    }
-
 }
 
 
